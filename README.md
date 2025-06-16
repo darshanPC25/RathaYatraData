@@ -1,36 +1,121 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Ratha Yatra Donations Management System
 
-## Getting Started
+A full-stack web application for managing Ratha Yatra donations, built with Next.js, TypeScript, Tailwind CSS, and MongoDB.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Donation Entry**
+  - Booklet and Serial Number management
+  - Block, Floor, and Quarter Number tracking
+  - Amount and Payment Mode recording
+  - Validation for duplicate entries
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **Booklet Wise View**
+  - Total amount per booklet
+  - List of all serials with donation details
+  - Empty slot tracking
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Block Wise View**
+  - Grid layout for each block
+  - Floor and Quarter Number organization
+  - Visual indicators for donated slots
+  - Detailed view on click
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Delete Entries**
+  - Delete by Serial Number
+  - Delete All Entries (password protected)
 
-## Learn More
+## Tech Stack
 
-To learn more about Next.js, take a look at the following resources:
+- **Frontend**
+  - Next.js 14 with App Router
+  - TypeScript
+  - Tailwind CSS
+  - React Hot Toast for notifications
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Backend**
+  - Next.js API Routes
+  - MongoDB with Mongoose
+  - TypeScript
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Prerequisites
 
-## Deploy on Vercel
+- Node.js 18.17 or later
+- MongoDB (local or Atlas)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Setup
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd ratha-yatra-donations
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Create a `.env.local` file in the root directory:
+   ```
+   MONGODB_URI=mongodb://localhost:27017/dbAGV
+   ```
+
+4. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+5. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## Usage
+
+1. **Donation Entry**
+   - Select a booklet number (1-10)
+   - Choose a serial number based on the booklet
+   - Fill in block, floor, and quarter details
+   - Enter amount and payment mode
+   - Click "Save Donation"
+
+2. **Booklet Wise**
+   - View donations organized by booklet
+   - See total amount per booklet
+   - Check individual donation details
+
+3. **Block Wise**
+   - View donations in a grid layout
+   - Green cells indicate donated slots
+   - Click on a cell to see donation details
+
+4. **Delete Entries**
+   - Delete individual donations by serial number
+   - Delete all entries using admin password
+
+## Development
+
+- Run tests:
+  ```bash
+  npm test
+  ```
+
+- Build for production:
+  ```bash
+  npm run build
+  ```
+
+- Start production server:
+  ```bash
+  npm start
+  ```
+
+## License
+
+MIT License - feel free to use this project for your own purposes.
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
