@@ -22,7 +22,7 @@ export default function BookletWise() {
       const data: Donation[] = await response.json();
 
       // Group donations by booklet number
-      const groupedDonations: BookletDonations[] = Array.from({ length: 10 }, (_, i) => {
+      const groupedDonations: BookletDonations[] = Array.from({ length: 20 }, (_, i) => {
         const bookletNumber = i + 1;
         const startSerial = (bookletNumber - 1) * 50 + 1;
         // const endSerial = bookletNumber * 50;
