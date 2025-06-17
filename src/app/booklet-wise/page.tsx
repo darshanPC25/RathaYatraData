@@ -25,7 +25,7 @@ export default function BookletWise() {
       const groupedDonations: BookletDonations[] = Array.from({ length: 10 }, (_, i) => {
         const bookletNumber = i + 1;
         const startSerial = (bookletNumber - 1) * 50 + 1;
-        const endSerial = bookletNumber * 50;
+        // const endSerial = bookletNumber * 50;
         
         // Create array of 50 slots for each booklet
         const slots = Array(50).fill(null);
