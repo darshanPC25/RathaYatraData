@@ -9,7 +9,7 @@ const errorResponse = (message: string, status: number = 500) => {
 };
 
 // Helper function to format success response
-const successResponse = (data: any, status: number = 200) => {
+const successResponse = <T>(data: T, status: number = 200) => {
   return NextResponse.json(data, { status });
 };
 
@@ -87,19 +87,21 @@ export async function POST(request: Request) {
     // Create the donation
     const donation = await Donation.create(data);
     return successResponse(donation, 201);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating donation:', error);
     
     // Handle duplicate key error
-    if (error.code === 11000) {
-      const keyValue = error.keyValue;
-      if (keyValue.block && keyValue.floor && keyValue.qtrNumber) {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 11000) {
+      const mongoError = error as { keyValue?: Record<string, unknown> };
+      const keyValue = mongoError.keyValue;
+      
+      if (keyValue?.block && keyValue?.floor && keyValue?.qtrNumber) {
         return errorResponse(
           `A donation already exists for Block ${keyValue.block}, Floor ${keyValue.floor}, Quarter ${keyValue.qtrNumber}`,
           400
         );
       }
-      if (keyValue.bookletNumber && keyValue.serialNumber) {
+      if (keyValue?.bookletNumber && keyValue?.serialNumber) {
         return errorResponse(
           `A donation already exists for Booklet ${keyValue.bookletNumber}, Serial ${keyValue.serialNumber}`,
           400

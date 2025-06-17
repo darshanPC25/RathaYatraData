@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Donation, Block } from '@/types';
 import toast from 'react-hot-toast';
 import { useDonation } from '@/context/DonationContext';
-import { useRouter } from 'next/navigation';
+// import { useRouter } from 'next/navigation';
 
 const BLOCKS: Block[] = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'L'];
 const PAYMENT_MODES = ['CASH','UPI'] as const;
@@ -19,7 +19,7 @@ const getSerialRange = (bookletNumber: number) => {
 
 export default function DonationForm() {
   const { refreshTotal } = useDonation();
-  const router = useRouter();
+  // const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [availableSerials, setAvailableSerials] = useState<number[]>([]);
   const [serialRange, setSerialRange] = useState({ start: 1, end: 50 });
@@ -60,7 +60,7 @@ export default function DonationForm() {
     if (formData.bookletNumber) {
       fetchAvailableSerials();
     }
-  }, [formData.bookletNumber]);
+  }, [formData.bookletNumber, formData.serialNumber]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -121,17 +121,17 @@ export default function DonationForm() {
     return block === 'B' || block === 'C' ? 9 : 11;
   };
 
-  const resetForm = () => {
-    setFormData({
-      bookletNumber: 1,
-      serialNumber: 1,
-      block: 'A',
-      floor: 1,
-      qtrNumber: 1,
-      amount: 0,
-      paymentMode: 'CASH'
-    });
-  };
+  // const resetForm = () => {
+  //   setFormData({
+  //     bookletNumber: 1,
+  //     serialNumber: 1,
+  //     block: 'A',
+  //     floor: 1,
+  //     qtrNumber: 1,
+  //     amount: 0,
+  //     paymentMode: 'CASH'
+  //   });
+  // };
 
   return (
     <div className="min-h-screen bg-gray-900 py-8">

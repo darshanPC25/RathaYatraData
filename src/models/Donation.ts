@@ -1,5 +1,5 @@
 import mongoose, { Document } from 'mongoose';
-import { Donation as DonationType, Block } from '@/types';
+import { Donation as DonationType} from '@/types';
 
 // Extend the DonationType with Document properties
 interface DonationDocument extends DonationType, Document {}
