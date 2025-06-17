@@ -1,12 +1,12 @@
-export type Block = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K' | 'L' | 'M' | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' | 'Y' | 'Z';
-export type PaymentMode = 'UPI' | 'Cash' | 'Bank Transfer';
+export type Block = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'J' | 'K' | 'L';
+export type PaymentMode = 'CASH' | 'UPI';
 
 export interface Donation {
   bookletNumber: number;
   serialNumber: number;
   block: Block;
   floor: number;
-  quarterNumber: number;
+  qtrNumber: number;
   amount: number;
   paymentMode: PaymentMode;
   createdAt?: Date;
@@ -18,15 +18,15 @@ export interface DonationFormData {
   serialNumber: string | number;
   block: Block;
   floor: number;
-  quarterNumber: number;
+  qtrNumber: number;
   amount: number;
   paymentMode: PaymentMode;
 }
 
 export interface BookletDonations {
   bookletNumber: number;
-  totalAmount: number;
   donations: (Donation | null)[];
+  totalAmount: number;
 }
 
 export interface BlockDonations {

@@ -62,9 +62,9 @@ A full-stack web application for managing Ratha Yatra donations, built with Next
    ```
 
 4. Start the development server:
-   ```bash
-   npm run dev
-   ```
+```bash
+npm run dev
+```
 
 5. Open [http://localhost:3000](http://localhost:3000) in your browser.
 

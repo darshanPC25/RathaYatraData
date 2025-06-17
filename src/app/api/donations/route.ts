@@ -1,113 +1,138 @@
 import { NextResponse } from 'next/server';
-import connectDB from '@/lib/mongodb';
-import Donation from '@/models/Donation';
+import { connectToDatabase } from '@/lib/mongodb';
+import { Donation } from '@/models/Donation';
+import { Donation as DonationType } from '@/types';
+
+// Helper function to format error response
+const errorResponse = (message: string, status: number = 500) => {
+  return NextResponse.json({ error: message }, { status });
+};
+
+// Helper function to format success response
+const successResponse = (data: any, status: number = 200) => {
+  return NextResponse.json(data, { status });
+};
+
+export async function GET() {
+  try {
+    await connectToDatabase();
+    const donations = await Donation.find()
+      .sort({ createdAt: -1 })
+      .lean()
+      .exec();
+    
+    return successResponse(donations);
+  } catch (error) {
+    console.error('Error fetching donations:', error);
+    return errorResponse('Failed to fetch donations');
+  }
+}
 
 export async function POST(request: Request) {
   try {
-    await connectDB();
-    const body = await request.json();
+    await connectToDatabase();
+    const data: DonationType = await request.json();
 
     // Validate required fields
-    const requiredFields = ['bookletNumber', 'serialNumber', 'block', 'floor', 'quarterNumber', 'amount', 'paymentMode'];
-    for (const field of requiredFields) {
-      if (!body[field]) {
-        return NextResponse.json(
-          { message: `${field} is required` },
-          { status: 400 }
+    const requiredFields = ['bookletNumber', 'serialNumber', 'block', 'floor', 'qtrNumber', 'amount', 'paymentMode'];
+    const missingFields = requiredFields.filter(field => !data[field as keyof DonationType]);
+    
+    if (missingFields.length > 0) {
+      return errorResponse(`Missing required fields: ${missingFields.join(', ')}`, 400);
+    }
+
+    // Validate booklet number
+    if (data.bookletNumber < 1 || data.bookletNumber > 10) {
+      return errorResponse('Booklet number must be between 1 and 10', 400);
+    }
+
+    // Validate serial number range
+    const expectedStartSerial = (data.bookletNumber - 1) * 50 + 1;
+    const expectedEndSerial = data.bookletNumber * 50;
+
+    if (data.serialNumber < expectedStartSerial || data.serialNumber > expectedEndSerial) {
+      return errorResponse(
+        `Serial number must be between ${expectedStartSerial} and ${expectedEndSerial} for booklet ${data.bookletNumber}`,
+        400
+      );
+    }
+
+    // Check for existing donation with same quarter
+    const existingQuarter = await Donation.findOne({
+      block: data.block,
+      floor: data.floor,
+      qtrNumber: data.qtrNumber
+    }).lean();
+
+    if (existingQuarter) {
+      return errorResponse(
+        `A donation already exists for Block ${data.block}, Floor ${data.floor}, Quarter ${data.qtrNumber}`,
+        400
+      );
+    }
+
+    // Check for existing donation with same serial
+    const existingSerial = await Donation.findOne({
+      bookletNumber: data.bookletNumber,
+      serialNumber: data.serialNumber
+    }).lean();
+
+    if (existingSerial) {
+      return errorResponse(
+        `A donation already exists for Booklet ${data.bookletNumber}, Serial ${data.serialNumber}`,
+        400
+      );
+    }
+
+    // Create the donation
+    const donation = await Donation.create(data);
+    return successResponse(donation, 201);
+  } catch (error: any) {
+    console.error('Error creating donation:', error);
+    
+    // Handle duplicate key error
+    if (error.code === 11000) {
+      const keyValue = error.keyValue;
+      if (keyValue.block && keyValue.floor && keyValue.qtrNumber) {
+        return errorResponse(
+          `A donation already exists for Block ${keyValue.block}, Floor ${keyValue.floor}, Quarter ${keyValue.qtrNumber}`,
+          400
+        );
+      }
+      if (keyValue.bookletNumber && keyValue.serialNumber) {
+        return errorResponse(
+          `A donation already exists for Booklet ${keyValue.bookletNumber}, Serial ${keyValue.serialNumber}`,
+          400
         );
       }
     }
 
-    // Check for duplicate serial number
-    const existingSerial = await Donation.findOne({ serialNumber: body.serialNumber });
-    if (existingSerial) {
-      return NextResponse.json(
-        { message: 'Serial number already exists' },
-        { status: 400 }
-      );
-    }
-
-    // Check for duplicate block + floor + quarter combination
-    const existingLocation = await Donation.findOne({
-      block: body.block,
-      floor: body.floor,
-      quarterNumber: body.quarterNumber,
-    });
-    if (existingLocation) {
-      return NextResponse.json(
-        { message: 'This location already has a donation' },
-        { status: 400 }
-      );
-    }
-
-    const donation = await Donation.create(body);
-    return NextResponse.json(donation, { status: 201 });
-  } catch (error) {
-    console.error('Error creating donation:', error);
-    return NextResponse.json(
-      { message: 'Error creating donation. Please try again.' },
-      { status: 500 }
-    );
-  }
-}
-
-export async function GET() {
-  try {
-    await connectDB();
-    const donations = await Donation.find().sort({ createdAt: -1 });
-    return NextResponse.json(donations);
-  } catch (error) {
-    console.error('Error fetching donations:', error);
-    return NextResponse.json(
-      { message: 'Error fetching donations. Please try again.' },
-      { status: 500 }
-    );
+    return errorResponse('Failed to create donation');
   }
 }
 
 export async function DELETE(request: Request) {
   try {
-    await connectDB();
     const { searchParams } = new URL(request.url);
     const serialNumber = searchParams.get('serialNumber');
-    const password = searchParams.get('password');
 
-    if (serialNumber) {
-      // Delete single donation
-      const result = await Donation.deleteOne({ serialNumber: Number(serialNumber) });
-      if (result.deletedCount === 0) {
-        return NextResponse.json(
-          { message: 'Donation not found with the provided serial number' },
-          { status: 404 }
-        );
-      }
-      return NextResponse.json({ message: 'Donation deleted successfully' });
-    } 
-    
-    if (password) {
-      // Delete all donations
-      if (password !== 'admin123') {
-        return NextResponse.json(
-          { message: 'Invalid password' },
-          { status: 401 }
-        );
-      }
-      const result = await Donation.deleteMany({});
-      return NextResponse.json({ 
-        message: 'All donations deleted successfully',
-        count: result.deletedCount 
-      });
+    if (!serialNumber) {
+      return errorResponse('Serial number is required', 400);
     }
 
-    return NextResponse.json(
-      { message: 'Either serial number or password is required' },
-      { status: 400 }
-    );
+    await connectToDatabase();
+    const result = await Donation.deleteOne({ serialNumber: Number(serialNumber) });
+
+    if (result.deletedCount === 0) {
+      return errorResponse('Donation not found', 404);
+    }
+
+    return successResponse({ 
+      message: 'Donation deleted successfully',
+      deleted: true 
+    });
   } catch (error) {
-    console.error('Error deleting donation(s):', error);
-    return NextResponse.json(
-      { message: 'Error deleting donation(s). Please try again.' },
-      { status: 500 }
-    );
+    console.error('Error deleting donation:', error);
+    return errorResponse('Failed to delete donation');
   }
 } 
