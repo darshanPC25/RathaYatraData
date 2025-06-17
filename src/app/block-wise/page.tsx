@@ -1,13 +1,28 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Donation, Block, BlockDonations } from '@/types';
+import { Donation, Block } from '@/types';
 import toast from 'react-hot-toast';
 
 const BLOCKS: Block[] = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'L'];
 
+interface Quarter {
+  quarterNumber: number;
+  donation: Donation | null;
+}
+
+interface Floor {
+  floor: number;
+  quarters: Quarter[];
+}
+
+interface BlockDonation {
+  block: Block;
+  floors: Floor[];
+}
+
 export default function BlockWise() {
-  const [blockDonations, setBlockDonations] = useState<BlockDonations[]>([]);
+  const [blockDonations, setBlockDonations] = useState<BlockDonation[]>([]);
   const [selectedBlock, setSelectedBlock] = useState<Block>('A');
   const [selectedDonation, setSelectedDonation] = useState<Donation | null>(null);
   const [loading, setLoading] = useState(true);
@@ -26,7 +41,7 @@ export default function BlockWise() {
       const data: Donation[] = await response.json();
 
       // Group donations by block
-      const groupedDonations: BlockDonations[] = BLOCKS.map(block => ({
+      const groupedDonations: BlockDonation[] = BLOCKS.map(block => ({
         block,
         floors: Array.from({ length: 11 }, (_, i) => ({
           floor: i + 1,
